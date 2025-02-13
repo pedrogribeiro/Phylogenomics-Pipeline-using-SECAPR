@@ -1,0 +1,19 @@
+
+Intro:
+
+Since the amount of samples in a phylogenetics pipeline tend to be big, with many samples, a combination of FastQC (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) and MultiQC (https://github.com/MultiQC/MultiQC) is a good way to go 
+to easily check the quality of all samples and identify potential issues.
+Note: I always organize my samples with sequential names having an acronym for the project I am working on, and numbers goind from 001 to NNN (i.e., for the project Eudaminae MacroWolbachia, a sample name would be EMW001). This helps a lot to run for and while loops, 
+and to manipulate lists of files, samples, names, etc. BUT, it is very important to keep an organized metadata table at your local computer or server, so you a link between the sequencing name of the sample and the name you give them.
+
+#################### FASTQC
+## For FASTQC it is sufficient to have all your paired-reads in a single directory, named appropriately. I tend to always use full paths for my commands because of the way the submission to the cluster I use works.
+## 
+
+#!/bin/bash
+
+forward=/path/to/READSdirectory/file.R1.fastq
+reverse=/path/to/READSdirectory/file.R2.fastq
+OUTPUT=/path/to/OUTPUTdirectory
+
+fastqc -o /path/to/OUTPUTdirectory/out_allFastQC $"forward" $"reverse"
