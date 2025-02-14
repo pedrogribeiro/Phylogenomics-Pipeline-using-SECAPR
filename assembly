@@ -2,16 +2,59 @@ Intro: The assembly of contigs is the basis of the following analyses in the pip
 which are still fragmented, but useful for our purposes. This is a very memory demanding task, so using a cluster/server is highly recommended. SPAdes tests for different kmer sizes at the same time and assembles contigs based on the most suitable kmers.
 
 This is already a job that is done individually, for each sample in your study. So this means that you can either create separate scripts and run them independently, or you can use job arrays, which would require a qeueing system that will 
-submit the jobs in the array. I will give a simple example of how the SPAdes command looks, and then one example of a job array that facilitates submitting multiple jobs at the same time.
+submit the jobs in the array. I will give a simple example of how the SPAdes command looks, then one using a for loop to create several scripts at once for you
+to run them independtly, and lastly one example of a job array that facilitates submitting multiple jobs at the same time.
 
 ################ SPADES - INDIVIDUAL JOB
+## Here, -k indicate which kmer sizes you want SPAdes to test, -t indicates how many threads/CPUs you want the computer to use and -m is a memory limit you give SPAdes (sometimes it exceeds it anyway and crashes).
+##--pe1-1 and --pe1-2 are your reads.
 
 
+FORWARD=/storage/SERVER/home/user/Projects/CleanReads/EMW001.R1.fq.gz
+REVERSE=/storage/SERVER/home/user/Projects/CleanReads/EMW001.R2.fq.gz
+OUTCONTIGS=/storage/SERVER/home/user/Projects/contigs
 
+spades.py -k 21,33,77 -t 4 -m 100 --pe1-1 $"FORWARD" --pe1-2 $"REVERSE" -o $"OUTCONTIGS"/EMW001.fasta
 
+################ SPADES - ARRAY
+## The array will be quite different, and this is an example using PBS which is the qeueing system in the cluster I use, but there are other and the syntax would differ. 
+## Going through every detail of this would exceed the purpose of this guideline, so for arrays you should first get used to them. Importantly here, you create a list of the samples you want to process
+and then create a variable with the elements of this list. Then you use this variable to replace the elements (in this case, reads) in your SPAdes command
 
+## Creating the lists:
 
+cd /storage/SERVER/home/user/Projects/CleanReads
+for i in *R1.fasta; do echo $(basename ${i%.fq.gz}); done > ./forwardList.txt
+for i in *R2.fasta; do echo $(basename ${i%.fq.gz}); done > ./reverseList.txt
+for i in *R1.fasta; do echo $(basename ${i%R1.fq.gz}); done > ./sampleList.txt ## this last list is only used for the output. It basically excludes the R1 from the name.
 
+#PBS -N jobNAMEspades
+#PBS -l select=1:ncpus=4:mem=100gb:scratch_local=300gb
+#PBS -l walltime=168:59:00
+#PBS -o /storage/SERVER/home/user/Projects/contigs/PBSOUT/^array_index^jobNAMEspades.txt
+#PBS -e /storage/SERVER/home/user/Projects/contigs/PBSERR/^array_index^jobNAMEspades.txt
+#PBS -J 1-100
+
+#clean scratch after the end
+trap 'clean_scratch' TERM EXIT
+
+# go to scratch directory
+cd $SCRATCHDIR || exit 1
+export TMPDIR=$SCRATCHDIR
+
+# SPADES uses system temporary directory instead of current directory
+# redirect TMPDIR to scratch directory
+export TMPDIR=$"SCRATCHDIR"/tmp
+
+module load spades
+
+##NOTE: in this step, you are replacing, for each job submitted in the array, an element of the list created above as the variable for THIS given job.
+FORWARD=`sed -n -e "$PBS_ARRAY_INDEX p" /storage/SERVER/home/user/Projects/CleanReads/forwardList.txt`
+REVERSE=`sed -n -e "$PBS_ARRAY_INDEX p" /storage/SERVER/home/user/Projects/CleanReads/reverseList.txt`
+FASTA=`sed -n -e "$PBS_ARRAY_INDEX p" /storage/SERVER/home/user/Projects/CleanReads/sampleList.txt`
+OUTCONIGS=/storage/SERVER/home/user/Projects/contigs
+
+spades.py --tmp-dir $TMPDIR -k 21,33,77 -t 4 -m 100 --pe1-1 $FORWARD.fq.gz --pe1-2 $REVERSE.fq.gz -o $OUTCONTIGS/EMW$FASTA
 
 
 
