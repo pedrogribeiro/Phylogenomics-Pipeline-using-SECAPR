@@ -1,0 +1,37 @@
+Intro: The assembly of contigs is the basis of the following analyses in the pipeline because it is in this contigs that we will be able to find the loci we want to infer phylogenies. For butterflies, SPAdes works well to obtain relatively contigs, 
+which are still fragmented, but useful for our purposes. This is a very memory demanding task, so using a cluster/server is highly recommended. SPAdes tests for different kmer sizes at the same time and assembles contigs based on the most suitable kmers.
+
+This is already a job that is done individually, for each sample in your study. So this means that you can either create separate scripts and run them independently, or you can use job arrays, which would require a qeueing system that will 
+submit the jobs in the array. I will give a simple example of how the SPAdes command looks, and then one example of a job array that facilitates submitting multiple jobs at the same time.
+
+################ SPADES - INDIVIDUAL JOB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
