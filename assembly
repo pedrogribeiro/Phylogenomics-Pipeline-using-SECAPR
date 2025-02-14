@@ -8,18 +8,29 @@ to run them independtly, and lastly one example of a job array that facilitates 
 ################ SPADES - INDIVIDUAL JOB
 ## Here, -k indicate which kmer sizes you want SPAdes to test, -t indicates how many threads/CPUs you want the computer to use and -m is a memory limit you give SPAdes (sometimes it exceeds it anyway and crashes).
 ##--pe1-1 and --pe1-2 are your reads.
-
+---
 
 FORWARD=/storage/SERVER/home/user/Projects/CleanReads/EMW001.R1.fq.gz
 REVERSE=/storage/SERVER/home/user/Projects/CleanReads/EMW001.R2.fq.gz
 OUTCONTIGS=/storage/SERVER/home/user/Projects/contigs
 
-spades.py -k 21,33,77 -t 4 -m 100 --pe1-1 $"FORWARD" --pe1-2 $"REVERSE" -o $"OUTCONTIGS"/EMW001.fasta
+spades.py -k 21,33,77 -t 4 -m 100 --pe1-1 $FORWARD --pe1-2 $REVERSE -o $OUTCONTIGS/EMW001.fasta
+
+################ SPADES - FOR LOOP
+---
+
+for i in {001..100}; do echo -e 
+"FORWARD=/storage/SERVER/home/user/Projects/CleanReads/EMW$i.R1.fq.gz
+REVERSE=/storage/SERVER/home/user/Projects/CleanReads/EMW$i.R2.fq.gz
+OUTCONTIGS=/storage/SERVER/home/user/Projects/contigs
+
+spades.py -k 21,33,77 -t 4 -m 100 --pe1-1 $"FORWARD" --pe1-2 $"REVERSE" -o $"OUTCONTIGS"/EMW$i.fasta" > "$i.spades.sh"
 
 ################ SPADES - ARRAY
-## The array will be quite different, and this is an example using PBS which is the qeueing system in the cluster I use, but there are other and the syntax would differ. 
+## The array will be quite different, and this is an example using PBS which is the qeueing system in the cluster I use, but there are others and the syntax would differ. 
 ## Going through every detail of this would exceed the purpose of this guideline, so for arrays you should first get used to them. Importantly here, you create a list of the samples you want to process
-and then create a variable with the elements of this list. Then you use this variable to replace the elements (in this case, reads) in your SPAdes command
+## and then create a variable in which you will replace an element of the list for the value of the variable in one given job of the array. Then you replace the variable in the command.
+---
 
 ## Creating the lists:
 
