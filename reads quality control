@@ -5,15 +5,58 @@ Since the amount of samples in a phylogenetics pipeline tend to be big, with man
 to easily check the quality of all samples and identify potential issues.
 Note: I always organize my samples with sequential names having an acronym for the project I am working on, and numbers goind from 001 to NNN (i.e., for the project Eudaminae MacroWolbachia, a sample name would be EMW001). This helps a lot to run for and while loops, 
 and to manipulate lists of files, samples, names, etc. BUT, it is very important to keep an organized metadata table at your local computer or server, so you a link between the sequencing name of the sample and the name you give them.
+Note 2: All of the following programs work with fq.gz files, which are usually the extension of compressed fastq files, the files that arrive from a sequencing experiment.
+
 
 #################### FASTQC
 ## For FASTQC it is sufficient to have all your paired-reads in a single directory, named appropriately. I tend to always use full paths for my commands because of the way the submission to the cluster I use works.
-## 
+--
 
 #!/bin/bash
 
-forward=/path/to/READSdirectory/file.R1.fastq
-reverse=/path/to/READSdirectory/file.R2.fastq
-OUTPUT=/path/to/OUTPUTdirectory
+FORWARD=/storage/SERVER/home/user/Projects/UncleanedrawReads/EMW$i.R1.fq.gz
+REVERSE=/storage/SERVER/home/user/Projects/UncleanedrawReads/EMW$i.R1.fq.gz
+OUTPUTFQC=/storage/SERVER/home/user/Projects/OUTPUTfastqc
 
-fastqc -o /path/to/OUTPUTdirectory/out_allFastQC $"forward" $"reverse"
+fastqc -o /path/to/OUTPUTFastQc $"forward" $"reverse"
+
+
+#################### MULTIQC
+## MultiQC is a very simple and fast program that will generate an HTML file with the summary of the FastQC analyses. To run it, you just need to be in the directory containing all of the FastQC results and run MultiQC. The generated HTML file is the easiest way
+## to check the quality of many samples at the same time and identify issues. If you need to, you can go to FastQC results after identifying a problematic sample to get more details. 
+--
+
+#!/bin/bash
+
+cd $OUTPUTFQC
+multiqc .
+
+## In the previous script, the "." represents the current directory, which means that you are running the program in the directory you went to with the "cd" command.
+
+#################### FASTP - TRIMMING 
+## Trimming is basically removing parts of your reads that: have poor quality scores, have adapters, have overrepresented sequences, etc. Usually, sequenced samples will have adapters that need to be removed. 
+## Sometimes sequencing companies remove them, but not always. There are many programs that allow more sophisticated trimming such as Trimmomatic, but FastP works quite well with a very simple default command, dealing with most
+## sequencing issues.
+--
+
+#!/bin/bash
+
+FORWARD=/storage/SERVER/home/user/Projects/UncleanedrawReads/EMW$i.R1.fq.gz
+REVERSE=/storage/SERVER/home/user/Projects/UncleanedrawReads/EMW$i.R1.fq.gz
+OUT=/storage/SERVER/home/user/Projects/CleanReads
+
+fastp -i $FORWARD -I $REVERSE -o $"OUT"/EMW$i.R1.fq.gz -O $"OUT"/EMW$i.R2.fq.gz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
